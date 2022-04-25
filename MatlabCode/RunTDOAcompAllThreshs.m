@@ -14,6 +14,13 @@ file_list=(  dir(fullfile(cwd, '*.aif')));
 detectionsLocation = 'D:\Data\DCLDE2013\NN_output'
 NNoutput = dir(fullfile(detectionsLocation, '*.txt'))
 
+% Load the truth data
+truthFiles = dir('D:\Data\DCLDE2013\LogsWithNewSNR\RavenST\CorrectChannels\*.csv')
+
+% hydrophone locations etc
+dclde_2013_meta = xlsread('D:/DCL2013_NEFSC_SBNMS_200903_metadata.xlsx');
+
+%% Load the detections into a single table and form into stream like data
 detectionsOut =[];
 for ii = 1:1%length(NNoutput)
 
@@ -47,7 +54,6 @@ detections = detectionsOut;
 
 % Load DCLDE meta data
 % Load/Create Hydrophone Structure
-dclde_2013_meta = xlsread('D:/DCL2013_NEFSC_SBNMS_200903_metadata.xlsx');
 
 % Create labels for plotting locations (undocumented function)
 labels=sprintfc('%d',1:10);
@@ -169,8 +175,7 @@ clear counts ids doubleBooked callId primaryCalldexs corrscores keepIdx
 
 
 
-%% Load the truth data
-truthFiles = dir('D:\Data\DCLDE2013\LogsWithNewSNR\RavenST\CorrectChannels\*.csv')
+%%
 
 truthStream =[]
 for ii=1:1%length(truthFiles)
