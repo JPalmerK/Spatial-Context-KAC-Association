@@ -15,7 +15,7 @@ detectionsLocation = 'D:\Data\DCLDE2013\NN_output'
 NNoutput = dir(fullfile(detectionsLocation, '*.txt'))
 
 detectionsOut =[];
-for ii = 1:4%length(NNoutput)
+for ii = 1:1%length(NNoutput)
 
     
     fname = fullfile(NNoutput(ii).folder, NNoutput(ii).name)
@@ -173,7 +173,7 @@ clear counts ids doubleBooked callId primaryCalldexs corrscores keepIdx
 truthFiles = dir('D:\Data\DCLDE2013\LogsWithNewSNR\RavenST\CorrectChannels\*.csv')
 
 truthStream =[]
-for ii=1:length(truthFiles)
+for ii=1:1%length(truthFiles)
     
     truthtemp = readtable(fullfile(truthFiles(ii).folder, truthFiles(ii).name));
     truthtemp=truthtemp(:,1:7);
@@ -351,13 +351,13 @@ for ii =1:length(simThreshs)
             'MarkerSize',sizeVal(markercounter))
         markercounter=markercounter+1
         
-%         
-%         
-%         hold on
-%         plot(Results.Baseline(1,1).Recall,...
-%             Results.Baseline(1,1).Precision,...
-%             'k-','Linewidth',2)
-%         xlabel('Recall'); ylabel('Precision')
+        
+        
+        hold on
+        plot(Results.Baseline(1,1).Recall,...
+            Results.Baseline(1,1).Precision,...
+            'k-','Linewidth',2)
+        xlabel('Recall'); ylabel('Precision')
         
         
     end
@@ -366,15 +366,7 @@ for ii =1:length(simThreshs)
     
 end
 
-% Do the detector onnly
-[~, detector,~] = PrecisionRecallKAC(simStructTDOA, truth);
-Results.Baseline(1,1) = detector;
 
-        hold on
-        plot(Results.Baseline(1,1).Recall,...
-            Results.Baseline(1,1).Precision,...
-            'k-','Linewidth',2)
-        xlabel('Recall'); ylabel('Precision')
 legend({'Temporal Clustering', 'TDOA Method', 'Detector' })
 %%
 
