@@ -16,9 +16,13 @@ load('D:\Spatial-Context\Scripts\DCLDE2013_RWDCLDE_2013_10_Chan201914101_96_arra
 
 detectionsLocation = 'D:\Data\DCLDE2013\NN_output'
 NNoutput = dir(fullfile(detectionsLocation, '*.txt'))
+% Load DCLDE meta data
+% Load/Create Hydrophone Structure
+dclde_2013_meta = xlsread('D:/DCL2013_NEFSC_SBNMS_200903_metadata.xlsx');
 
 detectionsOut =[];
-for ii = 1:4%length(NNoutput)
+% load the NN detectior output (set to 1 for debugging)
+for ii = 1:1%length(NNoutput)
 
     
     fname = fullfile(NNoutput(ii).folder, NNoutput(ii).name)
@@ -42,13 +46,10 @@ end
 % %  
 %   detectionsOut(detectionsOut.Score<0.7,:)=[];
 %  
-
+truthFiles = dir('D:\Data\DCLDE2013\LogsWithNewSNR\RavenST\CorrectChannels\*.csv')
 detections = detectionsOut;
 %% Hydrophone data
 
-% Load DCLDE meta data
-% Load/Create Hydrophone Structure
-dclde_2013_meta = xlsread('D:/DCL2013_NEFSC_SBNMS_200903_metadata.xlsx');
 
 % Create labels for plotting locations (undocumented function)
 labels=sprintfc('%d',1:10);
@@ -70,13 +71,9 @@ end
 
 
 
-%
-% parm.waveform=0;
-
-%% 
 
 %% Load the truth data
-truthFiles = dir('D:\Data\DCLDE2013\LogsWithNewSNR\RavenST\CorrectChannels\*.csv')
+
 
 truthStream =[]
 for ii=1:1%length(truthFiles)
@@ -173,12 +170,11 @@ detectionsRefOrig =detectionsRef;
 
 idxKeep = find(sum(~isnan(delays),2)>0);
 
-%%
 dex=dex(idxKeep,:);
 delays=delays(idxKeep,:);
 crossScores=crossScores(idxKeep,:);
-detectionsRef=detectionsRef(idxKeep,:)
-
+detectionsRef=detectionsRef(idxKeep,:);
+refScores = detections.Score(detectionsRef.Channel==ref_chan);
 %% Set up the simulation structure
 arrivalArray = detectionsRef.BeginTime_s_*ones(1,10)+delays;
 arrivalArray(:,10)=detectionsRef.BeginTime_s_;
@@ -198,14 +194,18 @@ simStruct.c =1500;  % speed of sound
 simStruct.truncateKm=18; % replaced by half normal function, previously maximum detection distance
 simStruct.maxEltTime = 10*60; % Maximum elapsed time between detections to make another encounter
 simStruct.s = 3;% maximum swim speed of the animal in m/s
-simStruct.RefScores = detections.Score(detections.Channel==ref_chan);
-simStruct.propAmbLoc ='C:\Data\DCLDE2013_ProjAmbSurfs_KAC'
+simStruct.RefScores = refScores;
+%simStruct.propAmbLoc ='C:\Data\DCLDE2013_ProjAmbSurfs_KAC'
 simStruct.array_struct = array_struct_data(ref_chan).array;
 simStruct.dex = dex;
 simStruct.TDOA_vals=delays;
 simStruct.child =1:9;
 simStruct.child_idx= 1:9;
 % Three different apporaches
+
+% Link the truth detections with the NN output
+[simStruct.pruned truth]= validateDetection(truth, simStruct, ref_chan);
+
 
 %%
 % % Create the similarity matrix using pre-computed ambiguity surfaces
@@ -228,13 +228,9 @@ simStructAcousticEncounders.Cluster_id = acEnc(simStructAcousticEncounders);
 simStructAcousticEncounders.Sim_mat = ones(size(simStructTDOA.Sim_mat));
 
 
-[simStruct.pruned truth]= validateDetection(truth, simStruct, ref_chan);
 
 
-% 
-% simStructTDOA.RefScores(simStructTDOA.pruned==0) = ...
-%     simStructTDOA.RefScores(simStructTDOA.pruned==0)+...
-%     randi(10,[sum(~simStructTDOA.pruned), 1])*.005;
+
 
 %% Create the results field to look at precision and recall as a function
 % of the max elapsed time and similarity threshold
